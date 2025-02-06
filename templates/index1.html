@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân đoạn ổ gà</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            width: 60%;
+            cursor: pointer;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #loading-message {
+            display: none;
+            font-size: 16px;
+            color: #007bff;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result-image, .result-video {
+            display: inline-block;
+            margin-top: 30px;
+            text-align: center;
+            border: 2px solid #4CAF50;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+        }
+
+        video, img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-image img {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .download-button {
+            display: block;
+            margin: 10px auto;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .download-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+        function showLoadingMessage() {
+            document.getElementById("loading-message").style.display = "block";
+        }
+    </script>
+</head>
+<body>
+    <h1>Web Pothole Segmentation Application</h1>
+    <div class="container">
+        <div class="form-section">
+            <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoadingMessage()">
+                <input type="file" name="file" accept="image/*,video/*" required>
+                <input type="submit" value="Tải lên">
+            </form>
+        </div>
+
+        <div id="loading-message">
+            <p>Đang xử lý, vui lòng chờ...</p>
+        </div>
+
+        {% if uploaded_filename %}
+            <div class="result-section">
+                <h2 class="section-title">Kết quả phân đoạn:</h2>
+
+                {% if uploaded_filename.endswith(('png', 'jpg', 'jpeg', 'gif')) %}
+                    <h3>Ảnh đã tải lên:</h3>
+                    <div class="result-image">
+                        <img src="{{ url_for('static', filename='uploads/' + uploaded_filename) }}" alt="Uploaded Image">
+                    </div>
+
+                    <h3>Ảnh đã phân đoạn:</h3>
+                    <div class="result-image">
+                        {% if image_with_boxes_path %}
+                            <img src="{{ image_with_boxes_path }}" alt="Processed Image" class="img-fluid">
+                            <a href="{{ image_with_boxes_path }}" class="download-button" download>Download Processed Image</a>
+                        {% else %}
+                            <p>Không có kết quả phân đoạn nào.</p>
+                        {% endif %}
+                    </div>
+
+                {% elif uploaded_filename.endswith(('mp4', 'avi', 'mov', 'mkv')) %}
+                    <h3>Video đã tải lên:</h3>
+                    <div class="result-video">
+                        <video controls>
+                            <source src="{{ url_for('static', filename='uploads/' + uploaded_filename) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
+                    <h3>Video đã phân đoạn:</h3>
+                    <div class="result-video">
+                        {% if video_with_segment_path %}
+                            <video controls>
+                                <source src="{{ video_with_segment_path }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <a href="{{ video_with_segment_path }}" class="download-button" download>Download Processed Video</a>
+                        {% else %}
+                            <p>Không có kết quả phân đoạn nào.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
